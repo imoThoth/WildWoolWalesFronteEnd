@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 // export const API_BASE_URL = 'http://localhost:8080/wildwoolwales/v1'
-const API_BASE_URL = 'http://WildWoolWAles-env.eba-fvftvdmu.us-east-1.elasticbeanstalk.com/wildwoolwales/v1'
+// const API_BASE_URL = 'http://WildWoolWAles-env.eba-fvftvdmu.us-east-1.elasticbeanstalk.com/wildwoolwales/v1'
+const API_BASE_URL = 'https://d3pvdwfltubwes.cloudfront.net/wildwoolwales/v1'
 const BRAND = 'wildwoolwales';
 
 export class ApiError extends Error {
