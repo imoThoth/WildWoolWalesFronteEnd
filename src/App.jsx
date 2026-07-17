@@ -53,7 +53,7 @@ function ShopApp() {
   const params = new URLSearchParams(window.location.search)
   const path = window.location.pathname.replace(/\/$/, '')  // strip trailing slash
 
-  if (path === '/verify-email/?token=') {
+  if (path === '/verify-email') {
     const token = params.get('token')
     if (token) {
       setView('verify')
