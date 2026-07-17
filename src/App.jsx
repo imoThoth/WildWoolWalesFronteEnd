@@ -50,34 +50,34 @@ function ShopApp() {
 
   // ── URL-driven entry points (email links, Stripe redirects) ─
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const path = window.location.pathname
+  const params = new URLSearchParams(window.location.search)
+  const path = window.location.pathname.replace(/\/$/, '')  // strip trailing slash
 
-    if (path === '/verify-email') {
-      const token = params.get('token')
-      if (token) {
-        setView('verify')
-        setVerifyStatus('verifying')
-        api.verifyEmail(token)
-          .then(() => setVerifyStatus('success'))
-          .catch((err) => {
-            setVerifyStatus('error')
-            setVerifyError(err instanceof ApiError ? err.message : 'Verification failed')
-          })
-      }
-      return
+  if (path === '/verify-email/?token=') {
+    const token = params.get('token')
+    if (token) {
+      setView('verify')
+      setVerifyStatus('verifying')
+      api.verifyEmail(token)
+        .then(() => setVerifyStatus('success'))
+        .catch((err) => {
+          setVerifyStatus('error')
+          setVerifyError(err instanceof ApiError ? err.message : 'Verification failed')
+        })
     }
+    return
+  }
 
-    if (path === '/checkout/success') {
-      setView('checkoutSuccess')
-      return
-    }
+  if (path === '/checkout/success') {
+    setView('checkoutSuccess')
+    return
+  }
 
-    if (path === '/checkout/cancel') {
-      setView('checkoutCancel')
-      return
-    }
-  }, [])
+  if (path === '/checkout/cancel') {
+    setView('checkoutCancel')
+    return
+  }
+}, [])
 
   // ── Navigation ─────────────────────────────────────────────
   const handleSelectProduct = (product) => {
