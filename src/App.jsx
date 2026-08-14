@@ -47,6 +47,9 @@ function ShopApp() {
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError] = useState('')
 
+  //ready
+    const { user, logout, ready } = useAuth()
+
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
 
   // ── URL-driven entry points (email links, Stripe redirects) ─
@@ -187,6 +190,14 @@ function ShopApp() {
     setView('shop')
     setSelectedProduct(null)
     window.history.replaceState({}, '', '/')
+  }
+
+    if (!ready) {
+    return (
+      <div style={{ background: '#FAF6ED', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ fontFamily: '"Newsreader", serif', color: '#7A6F5C' }}>Loading…</p>
+      </div>
+    )
   }
 
   return (
