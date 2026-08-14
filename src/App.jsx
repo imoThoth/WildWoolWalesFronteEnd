@@ -1,92 +1,63 @@
-import { useState, useEffect } from "react"
-import Header from "./Header"
-import Hero from "./Hero"
-import Footer from "./Footer"
-import CartDrawer from "./CartDrawer"
-import LoginModal from "./LoginModal"
-import RegisterModal from "./RegisterModal"
-import CheckEmailScreen from "./CheckEmailScreen"
-import VerifyEmailView from "./VerifyEmailView"
-import CheckoutResultView from "./CheckoutResultsView"
-import ProductGrid from "./products/ProductGrid"
-import AdminProductForm from "./AdminProductForm"
-import ProductDetail from "./products/ProductDetail"
-import { AuthProvider, useAuth } from "./AuthContext"
-import { api, ApiError } from "./api"
-
-// The outer shell — only job is to provide auth context
-export default function App() {
-  return (
-    <AuthProvider>
-      <ShopApp />
-    </AuthProvider>
-  )
-}
-
 function ShopApp() {
-  const { user, logout } = useAuth()
+  const { user, logout, ready } = useAuth()
 
-  // Auth-flow UI state (modals/screens, not auth data itself — that's in context)
-  const [authView, setAuthView] = useState(null) // null | 'login' | 'register' | 'checkEmail'
+  const [authView, setAuthView] = useState(null)
   const [pendingEmail, setPendingEmail] = useState('')
   const [pendingBuy, setPendingBuy] = useState(null)
-
-  // View / navigation
   const [view, setView] = useState('shop')
   const [selectedProduct, setSelectedProduct] = useState(null)
-
-  // Email verification landing state
-  const [verifyStatus, setVerifyStatus] = useState(null) // null | 'verifying' | 'success' | 'error'
+  const [verifyStatus, setVerifyStatus] = useState(null)
   const [verifyError, setVerifyError] = useState('')
-
-  // Cart
   const [cart, setCart] = useState([])
   const [cartOpen, setCartOpen] = useState(false)
-
-  // Checkout
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError, setCheckoutError] = useState('')
 
-  //ready
-    const { user, logout, ready } = useAuth()
-
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
 
-  // ── URL-driven entry points (email links, Stripe redirects) ─
   useEffect(() => {
-  const params = new URLSearchParams(window.location.search)
-  const path = window.location.pathname.replace(/\/$/, '')  // strip trailing slash
+    const params = new URLSearchParams(window.location.search)
+    const path = window.location.pathname.replace(/\/$/, '')
 
-  if (path === '/verify-email') {
-    const token = params.get('token')
-    if (token) {
-      setView('verify')
-      setVerifyStatus('verifying')
-      api.verifyEmail(token)
-        .then(() => setVerifyStatus('success'))
-        .catch((err) => {
-          setVerifyStatus('error')
-          setVerifyError(err instanceof ApiError ? err.message : 'Verification failed')
-        })
+    if (path === '/verify-email') {
+      const token = params.get('token')
+      if (token) {
+        setView('verify')
+        setVerifyStatus('verifying')
+        api.verifyEmail(token)
+          .then(() => setVerifyStatus('success'))
+          .catch((err) => {
+            setVerifyStatus('error')
+            setVerifyError(err instanceof ApiError ? err.message : 'Verification failed')
+          })
+      }
+      return
     }
-    return
-  }
 
-  if (path === '/checkout/success') {
-    setView('checkoutSuccess')
-    return
-  }
+    if (path === '/checkout/success') {
+      setView('checkoutSuccess')
+      return
+    }
 
-  if (path === '/checkout/cancel') {
-    setView('checkoutCancel')
-    return
-  }
+    if (path === '/checkout/cancel') {
+      setView('checkoutCancel')
+      return
+    }
 
     if (path === '/admin/products/new') {
-    setView('adminProductForm')
-    return
+      setView('adminProductForm')
+      return
+    }
+  }, [])
+
+  // ── All hooks declared above this line. Now safe to early-return. ──
+  if (!ready) {
+    return (
+      <div style={{ background: '#FAF6ED', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ fontFamily: '"Newsreader", serif', color: '#7A6F5C' }}>Loading…</p>
+      </div>
+    )
   }
-}, [])
 
   // ── Navigation ─────────────────────────────────────────────
   const handleSelectProduct = (product) => {
@@ -106,9 +77,7 @@ function ShopApp() {
       const existing = prev.find((item) => item.id === product.id)
       if (existing) {
         return prev.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         )
       }
       return [...prev, { ...product, quantity: 1 }]
@@ -121,9 +90,7 @@ function ShopApp() {
       setCart((prev) => prev.filter((item) => item.id !== id))
     } else {
       setCart((prev) =>
-        prev.map((item) =>
-          item.id === id ? { ...item, quantity: newQuantity } : item
-        )
+        prev.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item))
       )
     }
   }
@@ -177,8 +144,6 @@ function ShopApp() {
       }))
 
       const response = await api.checkout(checkoutItems)
-
-      // Full browser navigation — Stripe's hosted page is not part of this app.
       window.location.href = response.checkoutUrl
     } catch (err) {
       setCheckoutError(err instanceof ApiError ? err.message : 'Checkout failed. Please try again.')
@@ -190,14 +155,6 @@ function ShopApp() {
     setView('shop')
     setSelectedProduct(null)
     window.history.replaceState({}, '', '/')
-  }
-
-    if (!ready) {
-    return (
-      <div style={{ background: '#FAF6ED', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ fontFamily: '"Newsreader", serif', color: '#7A6F5C' }}>Loading…</p>
-      </div>
-    )
   }
 
   return (
@@ -213,10 +170,7 @@ function ShopApp() {
       {view === 'shop' && (
         <>
           <Hero />
-          <ProductGrid
-            onSelectProduct={handleSelectProduct}
-            onAddToCart={handleAddToCart}
-          />
+          <ProductGrid onSelectProduct={handleSelectProduct} onAddToCart={handleAddToCart} />
         </>
       )}
 
@@ -233,26 +187,11 @@ function ShopApp() {
       {view === 'adminProductForm' && <AdminProductForm />}
 
       {view === 'verify' && (
-        <VerifyEmailView
-          status={verifyStatus}
-          error={verifyError}
-          onGoToShop={handleContinueBrowsing}
-        />
+        <VerifyEmailView status={verifyStatus} error={verifyError} onGoToShop={handleContinueBrowsing} />
       )}
 
-      {view === 'checkoutSuccess' && (
-        <CheckoutResultView
-          status="success"
-          onGoToShop={handleContinueBrowsing}
-        />
-      )}
-
-      {view === 'checkoutCancel' && (
-        <CheckoutResultView
-          status="cancel"
-          onGoToShop={handleContinueBrowsing}
-        />
-      )}
+      {view === 'checkoutSuccess' && <CheckoutResultView status="success" onGoToShop={handleContinueBrowsing} />}
+      {view === 'checkoutCancel' && <CheckoutResultView status="cancel" onGoToShop={handleContinueBrowsing} />}
 
       <Footer />
 
@@ -268,10 +207,7 @@ function ShopApp() {
 
       {authView === 'login' && (
         <LoginModal
-          onClose={() => {
-            setAuthView(null)
-            setPendingBuy(null)
-          }}
+          onClose={() => { setAuthView(null); setPendingBuy(null) }}
           onLogin={handleLogin}
           onSwitchToRegister={() => setAuthView('register')}
         />
@@ -279,20 +215,14 @@ function ShopApp() {
 
       {authView === 'register' && (
         <RegisterModal
-          onClose={() => {
-            setAuthView(null)
-            setPendingBuy(null)
-          }}
+          onClose={() => { setAuthView(null); setPendingBuy(null) }}
           onRegistered={handleRegistered}
           onSwitchToLogin={() => setAuthView('login')}
         />
       )}
 
       {authView === 'checkEmail' && (
-        <CheckEmailScreen
-          email={pendingEmail}
-          onClose={() => setAuthView(null)}
-        />
+        <CheckEmailScreen email={pendingEmail} onClose={() => setAuthView(null)} />
       )}
     </div>
   )
