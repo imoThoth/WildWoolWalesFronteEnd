@@ -9,6 +9,7 @@ import CheckEmailScreen from "./CheckEmailScreen"
 import VerifyEmailView from "./VerifyEmailView"
 import CheckoutResultView from "./CheckoutResultsView"
 import ProductGrid from "./products/ProductGrid"
+import AdminProductForm from "./AdminProductForm"
 import ProductDetail from "./products/ProductDetail"
 import { AuthProvider, useAuth } from "./AuthContext"
 import { api, ApiError } from "./api"
@@ -75,6 +76,11 @@ function ShopApp() {
 
   if (path === '/checkout/cancel') {
     setView('checkoutCancel')
+    return
+  }
+
+    if (path === '/admin/products/new') {
+    setView('adminProductForm')
     return
   }
 }, [])
@@ -212,6 +218,8 @@ function ShopApp() {
           loading={checkoutLoading}
         />
       )}
+
+      {view === 'adminProductForm' && <AdminProductForm />}
 
       {view === 'verify' && (
         <VerifyEmailView
