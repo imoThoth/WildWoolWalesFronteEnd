@@ -1,3 +1,28 @@
+import { useState, useEffect } from "react"
+import Header from "./Header"
+import Hero from "./Hero"
+import Footer from "./Footer"
+import CartDrawer from "./CartDrawer"
+import LoginModal from "./LoginModal"
+import RegisterModal from "./RegisterModal"
+import CheckEmailScreen from "./CheckEmailScreen"
+import VerifyEmailView from "./VerifyEmailView"
+import CheckoutResultView from "./CheckoutResultsView"
+import ProductGrid from "./products/ProductGrid"
+import AdminProductForm from "./AdminProductForm"
+import ProductDetail from "./products/ProductDetail"
+import { AuthProvider, useAuth } from "./AuthContext"
+import { api, ApiError } from "./api"
+
+// The outer shell — only job is to provide auth context
+export default function App() {
+  return (
+    <AuthProvider>
+      <ShopApp />
+    </AuthProvider>
+  )
+}
+
 function ShopApp() {
   const { user, logout, ready } = useAuth()
 
@@ -50,7 +75,6 @@ function ShopApp() {
     }
   }, [])
 
-  // ── All hooks declared above this line. Now safe to early-return. ──
   if (!ready) {
     return (
       <div style={{ background: '#FAF6ED', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -59,7 +83,6 @@ function ShopApp() {
     )
   }
 
-  // ── Navigation ─────────────────────────────────────────────
   const handleSelectProduct = (product) => {
     setSelectedProduct(product)
     setView('product')
@@ -71,7 +94,6 @@ function ShopApp() {
     setSelectedProduct(null)
   }
 
-  // ── Cart ───────────────────────────────────────────────────
   const handleAddToCart = (product) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id)
@@ -95,7 +117,6 @@ function ShopApp() {
     }
   }
 
-  // ── Auth ───────────────────────────────────────────────────
   const handleLogin = (loggedInUser) => {
     setAuthView(null)
     if (pendingBuy) {
@@ -115,7 +136,6 @@ function ShopApp() {
     setCart([])
   }
 
-  // ── Checkout ───────────────────────────────────────────────
   const handleBuyNow = (product) => {
     if (!user) {
       setPendingBuy(product)
