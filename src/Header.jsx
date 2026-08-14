@@ -42,9 +42,15 @@ function UserMenu({ user, onLogout }) {
 
       {open && (
         <div
-          className="absolute right-0 mt-3 min-w-[160px] py-2 z-40"
+          className="absolute right-0 mt-3 min-w-[180px] py-2 z-40"
           style={{ background: '#FAF6ED', border: '1px solid #1C1915' }}
         >
+                  {user.role === 'ADMIN' && (
+                      <a href="/admin/products/new">
+                        Add product
+                      </a>
+        )}
+
           <button
             onClick={() => {
               setOpen(false)
